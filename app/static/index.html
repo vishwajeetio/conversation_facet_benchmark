@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ocean Across Benchmark</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="panel workspace">
+        <div class="topbar">
+          <div>
+            <p class="eyebrow">Ocean Across</p>
+            <h1>Conversation facet evaluator</h1>
+          </div>
+          <button id="evaluateButton" type="button">Evaluate</button>
+        </div>
+
+        <label for="conversationInput">Conversation JSON</label>
+        <textarea id="conversationInput" spellcheck="false"></textarea>
+
+        <div class="controls">
+          <label>
+            Facet limit
+            <input id="facetLimit" type="number" min="1" max="5000" value="25" />
+          </label>
+          <label>
+            Conversation id
+            <input id="conversationId" type="text" value="demo-conversation" />
+          </label>
+        </div>
+      </section>
+
+      <section class="panel results">
+        <div class="resultHeader">
+          <div>
+            <p class="eyebrow">Scores</p>
+            <h2 id="summary">Ready</h2>
+          </div>
+          <span id="facetCount">0 facets</span>
+        </div>
+        <div id="status" class="status">Load a conversation and run the evaluator.</div>
+        <div class="tableWrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Turn</th>
+                <th>Facet</th>
+                <th>Score</th>
+                <th>Confidence</th>
+                <th>Rationale</th>
+              </tr>
+            </thead>
+            <tbody id="scoreRows"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

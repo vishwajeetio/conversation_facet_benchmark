@@ -1,0 +1,400 @@
+facet_id,name,category
+F0001,Risktaking,behavior
+F0002,Naivety,unclear
+F0003,Acidity,emotion
+F0004,Democratic Leadership,psychology
+F0005,Common-sense,unclear
+F0006,Hesitation,behavior
+F0007,Discontentment,emotion
+F0008,Overprotectiveness,safety
+F0009,Merriness,emotion
+F0010,Emotionalism,emotion
+F0011,Self-improvement,personality
+F0012,Statistical Reasoning,cognition
+F0013,Assertiveness and control in relationships,behavior
+F0014,Cunningness,unclear
+F0015,Adventure-Seeking Behavior,behavior
+F0016,Compassion Fatigue,health
+F0017,Moroseness,emotion
+F0018,Specialist,unclear
+F0019,Aloofness,personality
+F0020,Genuine,unclear
+F0021,Determinedness,psychology
+F0022,HonestyHumility,unclear
+F0023,Relationship Building Themes,behavior
+F0024,Pure Challenge,behavior
+F0025,Numerical Reasoning Subcomponents,cognition
+F0026,Openness,personality
+F0027,SelfEsteem,psychology
+F0028,Comparing alphanumeric data,unclear
+F0029,Big-heartedness,emotion
+F0030,Compulsive activities,behavior
+F0031,Disrespect,behavior
+F0032,FSH level,unclear
+F0033,Self Perspective,personality
+F0034,Desperation,emotion
+F0035,Affiliation Motivation,unclear
+F0036,Anatomy knowledge,unclear
+F0037,Passive-Aggressive,behavior
+F0038,Presence of Spiritual Pain,psychology
+F0039,Role of Spirituality in Community Involvement,psychology
+F0040,Structure,unclear
+F0041,Eco-tourism trips,unclear
+F0042,Chivalrousness,behavior
+F0043,Pilgrimage participation count,behavior
+F0044,Mindfulness facet: Observing,cognition
+F0045,Submissiveness,unclear
+F0046,Training-cycle length,unclear
+F0047,Sensitiveness,emotion
+F0048,Negative Affect Frequency,emotion
+F0049,Innovation and Creativity Components,cognition
+F0050,Achievement Motivation,unclear
+F0051,Feedback-giving frequency,behavior
+F0052,Dance-cardio sessions,unclear
+F0053,Enthusiasm,emotion
+F0054,Psychological construct: Social Desirability tendency,psychology
+F0055,Inattentiveness,cognition
+F0056,Unassertiveness,personality
+F0057,Decision-making decisiveness,cognition
+F0058,Sense-of-coherence score,psychology
+F0059,Justice-mindedness,psychology
+F0060,Subscription count,unclear
+F0061,Depression Symptoms,health
+F0062,Spatial perception,cognition
+F0063,Brevity,unclear
+F0064,Orderliness,psychology
+F0065,Multiculturalism,unclear
+F0066,Creative risk-taking tendency,personality
+F0067,Inefficiency,behavior
+F0068,Network basics,unclear
+F0069,Alphabetical filing skills,psychology
+F0070,Work Styles,behavior
+F0071,Character strength: Perseverance,personality
+F0072,Competition,behavior
+F0073,Logical Sequence Identification,cognition
+F0074,Sustainable-transport usage,unclear
+F0075,Hardworking,psychology
+F0076,Emotional-intelligence measure: Impulsiveness,emotion
+F0077,Dishonesty,behavior
+F0078,Preferred epistemology,unclear
+F0079,Memory for Sounds,cognition
+F0080,Sportsmanship rating,behavior
+F0081,Immaturity,behavior
+F0082,Health-literacy level,health
+F0083,Estimating Calculations,cognition
+F0084,Depression: Feelings of sadness and hopelessness,emotion
+F0085,Synthesis of information,cognition
+F0086,Leadership Potential,personality
+F0087,Ethical standards,psychology
+F0088,High-spiritedness,behavior
+F0089,Critical reasoning,cognition
+F0090,Sleep-disorder diagnosis,health
+F0091,Listening Skills Subcomponents,behavior
+F0092,Collaboration,behavior
+F0093,Precision of Movements,cognition
+F0094,Social Boldness,emotion
+F0095,Auditory memory,cognition
+F0096,Psychomotor Ability Subcomponents,cognition
+F0097,Organized lifestyle,behavior
+F0098,Skill-endorsements count,unclear
+F0099,Mysteriousness,unclear
+F0100,Cultural Identity,personality
+F0101,Intrinsic Motivation,unclear
+F0102,Impartial-mindedness,psychology
+F0103,Burnout Symptoms,health
+F0104,Holiness,unclear
+F0105,Selfcontrol,personality
+F0106,SelfDirectedness,personality
+F0107,Encouraging participation,behavior
+F0108,Impracticalness,unclear
+F0109,Meeting Deadlines,behavior
+F0110,Data Analysis,cognition
+F0111,Social Interaction Skills,behavior
+F0112,Psychoticism,psychology
+F0113,Ethical leadership rating,personality
+F0114,Slothfulness,unclear
+F0115,Happiness,emotion
+F0116,Contentment Levels,emotion
+F0117,Neuroticism,psychology
+F0118,Desire for excellence,unclear
+F0119,Perceiving,cognition
+F0120,Liberalism,personality
+F0121,Inversion comfort level,unclear
+F0122,Affection,emotion
+F0123,Numeric Filing Skills,unclear
+F0124,Martyrdom,psychology
+F0125,Parathyroid-hormone level,unclear
+F0126,Seeking approval,emotion
+F0127,Judging (J),personality
+F0128,Big Five facet Openness – Artistic Interests,personality
+F0129,Psychological construct: Operant-Learning rate,cognition
+F0130,Psychological construct: Need for Achievement level,cognition
+F0131,Cantankerousness,unclear
+F0132,Material properties knowledge,unclear
+F0133,Hostility,emotion
+F0134,Independence,personality
+F0135,Sufi practice: Sufi retreat attendance count,unclear
+F0136,Chromatin-accessibility score,unclear
+F0137,Spiritual virtue: Humility practice index,unclear
+F0138,I Ching hexagram 36 resonance level,unclear
+F0139,Well-being component: Engagement,unclear
+F0140,Need for social interaction,behavior
+F0141,Peer-collaboration hours,behavior
+F0142,Arts and Humanities,unclear
+F0143,Religious practice: Quran khatam cycles per year,unclear
+F0144,Bahá’í spiritual metric: Ridván festival participation,unclear
+F0145,Compassion,emotion
+F0146,Information Retention,cognition
+F0147,Eye-contact duration,behavior
+F0148,Self-righteousness,unclear
+F0149,General Mood and Attitude,emotion
+F0150,Serotonin transporter availability,health
+F0151,Contribution to Group Goals,behavior
+F0152,Dignity,emotion
+F0153,HEXACO Personality Inventory Facets,personality
+F0154,Evaluating Solutions,cognition
+F0155,Input,unclear
+F0156,Discreteness,unclear
+F0157,Energy-healing practice: Reiki sessions / year,health
+F0158,Astrology: Rising sign is Scorpio,unclear
+F0159,Character strength: Social Intelligence,personality
+F0160,Bravery,emotion
+F0161,Childhood Experiences,psychology
+F0162,Data-sharing consent level,unclear
+F0163,Vision-check frequency,health
+F0164,Physical-violence exposure,safety
+F0165,Macronutrient ratio: fat,unclear
+F0166,Cooking and Culinary Arts,unclear
+F0167,Language use,psychology
+F0168,Dance-style mastery diversity,behavior
+F0169,Satya Adherence,cognition
+F0170,Ethnocentrism,psychology
+F0171,Emotional Boundaries,emotion
+F0172,Creativity in solutions,cognition
+F0173,Psychological construct: Hope scale,psychology
+F0174,Practice frequency: Walking meditation,behavior
+F0175,Depression (DEP),health
+F0176,Understanding Mathematical Concepts,cognition
+F0177,Hypomania (Ma),psychology
+F0178,Goal-Directed Behavior,behavior
+F0179,Depth of Emotional Connections,emotion
+F0180,Binding foundations index,unclear
+F0181,Ego Dissolution Frequency,unclear
+F0182,Activator: Turning thoughts into action,behavior
+F0183,Gnostic spiritual metric: Archon meditation frequency,emotion
+F0184,Exemplariness,personality
+F0185,Moral and Ethical Parameters,unclear
+F0186,Submission,unclear
+F0187,Frankness,cognition
+F0188,Psychological construct: Psychological Safety climate,psychology
+F0189,Psychological construct: Self-Compassion total,psychology
+F0190,Psychological construct: Executive-Function composite,cognition
+F0191,Rebelliousness,personality
+F0192,Volunteer Work,behavior
+F0193,Intellect,cognition
+F0194,Use of Mathematical Formulas,cognition
+F0195,Coarseness,unclear
+F0196,Behavioral Tendencies and Subcomponents,behavior
+F0197,Sensitivity,emotion
+F0198,Divided Attention Ability,cognition
+F0199,Psychological construct: Acculturative Stress score,psychology
+F0200,Dauntlessness,personality
+F0201,Concreteness,unclear
+F0202,Hysteria (Hy),emotion
+F0203,Jewish spiritual metric: Sukkot lulav-shaking days,unclear
+F0204,Sentence Structure,cognition
+F0205,Esteem Needs,psychology
+F0206,Understanding mechanical concepts,cognition
+F0207,Auditory Memory Recall,cognition
+F0208,Storytelling proficiency,behavior
+F0209,Music-lessons years,unclear
+F0210,Warmheartedness,emotion
+F0211,Self-effacement,emotion
+F0212,Outspokenness,personality
+F0213,Sleep-environment temperature,unclear
+F0214,Comprehension of spoken information,cognition
+F0215,Blissfulness,emotion
+F0216,Sequential Memory Recall,cognition
+F0217,Withdrawnness,behavior
+F0218,Hindu spiritual metric: Yoga discipline hours / week,unclear
+F0219,Conservatism,unclear
+F0220,Adaptability and Flexibility Subcomponents,personality
+F0221,Hindu spiritual metric: Vrata vows observed / year,unclear
+F0222,Ardency,emotion
+F0223,Aesthetic Appreciation,cognition
+F0224,Transactional Leadership,behavior
+F0225,Value orientation: Universalism,personality
+F0226,Perseverance,cognition
+F0227,Regularity of Self-Reflection,psychology
+F0228,Controlling Reactions,behavior
+F0229,Psychological construct: Cultural Intelligence – Behavioral,personality
+F0230,Metabolic Rate (Low or High),health
+F0231,Dietary Habits,unclear
+F0232,Significance: Desire to make an impact,emotion
+F0233,Psychological construct: Resilience-Trait score,psychology
+F0234,Boredom Susceptibility,cognition
+F0235,Psychological construct: Consummatory Pleasure scale,emotion
+F0236,Leadership Styles and Behaviors,behavior
+F0237,I Ching hexagram 5 resonance level,unclear
+F0238,Macronutrient ratio: carbs,health
+F0239,Passport-stamps count,unclear
+F0240,Local-food sourcing %,unclear
+F0241,Patient care orientation,behavior
+F0242,Soft-skill training hours,unclear
+F0243,Graffiti appreciation,emotion
+F0244,Preference for Home-Cooked vs Restaurant Meals,unclear
+F0245,Immune-response age,health
+F0246,Social-cognition variable: Cognitive Empathy,cognition
+F0247,Kink-interest diversity,unclear
+F0248,Adaptability and Flexibility,behavior
+F0249,Judging Consequences,psychology
+F0250,Harmfulness,psychology
+F0251,Affinity,emotion
+F0252,Abasement,unclear
+F0253,Chronic pain presence,health
+F0254,Discernment practice hours / week,cognition
+F0255,Initiative,behavior
+F0256,Courageousness,behavior
+F0257,Joyfulness,emotion
+F0258,Suspicion,psychology
+F0259,Basophil count,unclear
+F0260,Attachment avoidance score,personality
+F0261,Time Orientation End Points,unclear
+F0262,Brazenness,behavior
+F0263,Talkativeness,behavior
+F0264,Equitableness,psychology
+F0265,Ideas generated/day,cognition
+F0266,Originality,unclear
+F0267,Fearfulness: Fear of physical dangers,safety
+F0268,Dance rehearsal hours/week,behavior
+F0269,Practice frequency: Mantra meditation,psychology
+F0270,Public-transport km/week,unclear
+F0271,Social Desirability Bias,psychology
+F0272,I Ching hexagram 43 resonance level,unclear
+F0273,Disagreeableness,personality
+F0274,Participation in Community Activities,behavior
+F0275,Impudence,psychology
+F0276,Analogies,cognition
+F0277,Clumsiness,unclear
+F0278,Tendency Toward Compromise or Confrontation,behavior
+F0279,I Ching hexagram 19 resonance level,unclear
+F0280,Robotics-interaction frequency,unclear
+F0281,Casual lifestyle,unclear
+F0282,Collectedness,psychology
+F0283,Reliance on context,cognition
+F0284,Delegation skills,behavior
+F0285,I Ching hexagram 49 resonance level,unclear
+F0286,Managing emotions,emotion
+F0287,Scripture memorization verses,unclear
+F0288,Conventional,unclear
+F0289,Hindu spiritual metric: Bhagavad-Gita study hours,unclear
+F0290,Open-source contributions,behavior
+F0291,Psychological construct: Social Conformity tendency,psychology
+F0292,Individuality,personality
+F0293,I Ching hexagram 22 resonance level,unclear
+F0294,Attachment style: Secure,psychology
+F0295,Intelligence Quotient (IQ),cognition
+F0296,Blog-subscriber count,behavior
+F0297,Non-Verbal Communication Skills,unclear
+F0298,Drug-use history,unclear
+F0299,Commute time/day,unclear
+F0300,Decision-making speed,cognition
+F0301,Psychological construct: Excuse-Making tendency,psychology
+F0302,Peer-to-peer lending usage,unclear
+F0303,Psychological construct: Eye-Contact avoidance score,psychology
+F0304,Social-cognition variable: Faux Pas Recognition accuracy,cognition
+F0305,Conscientiousness (C),personality
+F0306,Use of Nature as a Stress Reliever,health
+F0307,Attitude toward learning,behavior
+F0308,Conscientiousness Facets,personality
+F0309,Honesty-humility trait score,personality
+F0310,Digital-nomad months,unclear
+F0311,Religious coping – Negative,psychology
+F0312,Snacking Behavior,behavior
+F0313,Aura-color perception,unclear
+F0314,Sacred text engagement: Zohar (Kabbalah) study hours,psychology
+F0315,Motivational Drivers,cognition
+F0316,Cloud-backup frequency,safety
+F0317,Learning Style,behavior
+F0318,Islamic practice: Seerah study hours,psychology
+F0319,Safety compliance,safety
+F0320,Sensationalism,unclear
+F0321,Nationality,unclear
+F0322,Drollness,behavior
+F0323,Cooperation,behavior
+F0324,Breakfast-skipping frequency,behavior
+F0325,Sikh spiritual metric: Kirtan participation frequency,psychology
+F0326,Impulsivity,cognition
+F0327,Museum visits/year,behavior
+F0328,Choir participation years,behavior
+F0329,Delegation Ability,behavior
+F0330,Kabbalah sephira balance: Tiferet,psychology
+F0331,Desire to influence others,behavior
+F0332,Vivacity,emotion
+F0333,Genialness,emotion
+F0334,Cognitive measure: Working Memory Index,cognition
+F0335,Ethical practices,unclear
+F0336,New-Age spiritual metric: Channeling sessions / year,unclear
+F0337,Civility,behavior
+F0338,Sleep Apnea,health
+F0339,Classiness,unclear
+F0340,Control over situations,behavior
+F0341,Time outdoors/day (h),unclear
+F0342,Effeteness,unclear
+F0343,Polygenic risk: cardiovascular disease,health
+F0344,Psychological construct: Identity Diffusion level,psychology
+F0345,Learning through movement,cognition
+F0346,Caffeine sensitivity gene,unclear
+F0347,Hatefulness,emotion
+F0348,Persistence,behavior
+F0349,Psychological construct: Perfectionistic Strivings,psychology
+F0350,Wake-time consistency,health
+F0351,Numerical Reasoning,cognition
+F0352,Social-cognition variable: Mentalizing network activation,psychology
+F0353,Patriotism,unclear
+F0354,Leadership Styles,behavior
+F0355,Servility,behavior
+F0356,I Ching hexagram 24 resonance level,unclear
+F0357,Enneagram Personality Types,personality
+F0358,Stress Recovery Ability,psychology
+F0359,Troubleshooting technical issues,unclear
+F0360,Defense-mechanism tendency: Introjection,psychology
+F0361,Irritability,emotion
+F0362,Travel-companions diversity,unclear
+F0363,Sacred text engagement: Quran surahs memorized,unclear
+F0364,Trust in others,psychology
+F0365,Gamified-finance-app usage,behavior
+F0366,Buddhist practice: Eightfold Path – Right Intention level,psychology
+F0367,Caffeine intake (mg/day),unclear
+F0368,Comfort with Vulnerability,emotion
+F0369,Anticipativeness,unclear
+F0370,Additional Common Parameters and Their End Points,unclear
+F0371,Avoiding,behavior
+F0372,Home-security-system presence,safety
+F0373,HEXACO domain: Honesty-Humility,personality
+F0374,Eating Habits (Home-Cooked vs. Eating Out),behavior
+F0375,Decision-Making Confidence,psychology
+F0376,Alignment with societal roles,unclear
+F0377,Connectedness: Belief in interconnections,cognition
+F0378,Quirkiness,personality
+F0379,Creative resilience,personality
+F0380,Rapid cognitive processing,cognition
+F0381,Cordiality,unclear
+F0382,Types of Mindfulness Techniques Used,psychology
+F0383,Economic reasoning,cognition
+F0384,Conformity,behavior
+F0385,Pet-enrichment activities count,unclear
+F0386,Aestheticism,unclear
+F0387,Type of Support Preferred (Emotional vs. Practical),emotion
+F0388,Mental Arithmetic Speed,cognition
+F0389,Patience: Resistance to anger,emotion
+F0390,Flawlessness,personality
+F0391,Self-Efficacy,cognition
+F0392,Computer Skills,unclear
+F0393,Jewish spiritual metric: Shabbat candle-lighting consistency,emotion
+F0394,Spelling Accuracy,cognition
+F0395,Sufi practice: Dhikr repetitions / day,behavior
+F0396,Peacefulness,emotion
+F0397,Doggedness,behavior
+F0398,Decency,safety
+F0399,Processed-food frequency,health
