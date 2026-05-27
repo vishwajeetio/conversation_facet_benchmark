@@ -83,6 +83,8 @@ Then:
 4. Click `Evaluate`.
 5. Review per-turn, per-facet scores in the table.
 
+If the page is refreshed while a run is still active, the UI restores the active run id from browser storage and keeps showing the running status until the backend marks it completed or failed.
+
 Expected conversation format:
 
 ```json
@@ -100,6 +102,8 @@ Expected conversation format:
 
 ### API Flow
 
+Start an evaluation run:
+
 ```bash
 curl -X POST http://localhost:8000/api/evaluate \
   -H "Content-Type: application/json" \
@@ -113,6 +117,12 @@ curl -X POST http://localhost:8000/api/evaluate \
 ```
 
 Omit `facet_ids` to score all facets.
+
+The response includes a `run_id`. Poll that run until it is completed:
+
+```bash
+curl http://localhost:8000/api/evaluate/<run_id>
+```
 
 ### Saved Results
 
@@ -147,6 +157,7 @@ Zip `data/results` manually when preparing the final submission artifact.
 - Confidence output for every score.
 - Short rationale for every score.
 - Automatic result persistence as JSON.
+- Refresh-safe running status through persisted run state.
 - Batch-based scoring, so the architecture does not depend on one huge prompt.
 
 ## How It Works
@@ -161,6 +172,7 @@ raw facet CSV
   -> turn-by-turn facet batches
   -> Ollama JSON scoring
   -> normalized result records
+  -> persisted run status
   -> saved JSON run file
 ```
 
@@ -182,12 +194,14 @@ For each request, the app:
 
 1. Loads facets from `data/processed/facets.csv`.
 2. Selects requested facets or all facets.
-3. Iterates through each conversation turn.
-4. Splits facets into batches using `FACET_BATCH_SIZE`.
-5. Sends each turn-plus-facet-batch to Ollama.
-6. Parses JSON response.
-7. Normalizes missing or invalid scores.
-8. Saves the run to `data/results`.
+3. Creates a `run_id` and writes a running status file.
+4. Iterates through each conversation turn.
+5. Splits facets into batches using `FACET_BATCH_SIZE`.
+6. Sends each turn-plus-facet-batch to Ollama.
+7. Parses JSON response.
+8. Normalizes missing or invalid scores.
+9. Saves the run to `data/results`.
+10. Marks the persisted run status as completed or failed.
 
 This satisfies the no one-shot prompt constraint because each model call scores only a manageable batch of facets for one turn.
 

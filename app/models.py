@@ -40,3 +40,10 @@ class EvaluationResponse(BaseModel):
     model: str
     saved_path: str
     results: list[FacetScore]
+
+
+class EvaluationJobResponse(BaseModel):
+    run_id: str
+    status: str
+    message: str = ""
+    result: EvaluationResponse | None = None

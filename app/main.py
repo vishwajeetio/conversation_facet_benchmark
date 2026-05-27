@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -7,8 +9,8 @@ from fastapi.staticfiles import StaticFiles
 
 from app.evaluator import SCORE_SCALE, evaluate_conversation, make_client
 from app.facets import load_facets, select_facets
-from app.models import EvaluationRequest, EvaluationResponse
-from app.storage import save_run
+from app.models import EvaluationJobResponse, EvaluationRequest, EvaluationResponse
+from app.storage import make_run_id, read_run_status, save_run, write_run_status
 
 
 app = FastAPI(
@@ -45,11 +47,12 @@ def facets() -> dict:
     return {"count": len(records), "categories": categories, "facets": records}
 
 
-@app.post("/api/evaluate", response_model=EvaluationResponse)
-async def evaluate(payload: EvaluationRequest) -> EvaluationResponse:
-    selected = select_facets(payload.facet_ids)
-    if not selected:
-        raise HTTPException(status_code=400, detail="No matching facets found.")
+async def run_evaluation_job(
+    run_id: str,
+    payload: EvaluationRequest,
+    facet_ids: list[str],
+) -> None:
+    selected = select_facets(facet_ids)
     client = make_client()
     try:
         results = await evaluate_conversation(
@@ -58,21 +61,64 @@ async def evaluate(payload: EvaluationRequest) -> EvaluationResponse:
             selected,
             client=client,
         )
-    except RuntimeError as exc:
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
-    run_id, saved_path = save_run(
-        payload.conversation_id,
-        client.model_name,
-        payload.turns,
-        results,
+        _, saved_path = save_run(
+            payload.conversation_id,
+            client.model_name,
+            payload.turns,
+            results,
+            run_id=run_id,
+        )
+        response = EvaluationResponse(
+            conversation_id=payload.conversation_id,
+            run_id=run_id,
+            score_scale=SCORE_SCALE,
+            facet_count=len(selected),
+            turn_count=len(payload.turns),
+            model=client.model_name,
+            saved_path=str(saved_path),
+            results=results,
+        )
+        write_run_status(
+            run_id,
+            "completed",
+            "Evaluation completed.",
+            response.model_dump(mode="json"),
+        )
+    except Exception as exc:
+        write_run_status(run_id, "failed", str(exc))
+
+
+@app.post("/api/evaluate", response_model=EvaluationJobResponse)
+async def evaluate(payload: EvaluationRequest) -> EvaluationJobResponse:
+    selected = select_facets(payload.facet_ids)
+    if not selected:
+        raise HTTPException(status_code=400, detail="No matching facets found.")
+    run_id = make_run_id(payload.conversation_id)
+    facet_ids = [facet.facet_id for facet in selected]
+    write_run_status(run_id, "running", "Evaluation is running.")
+    asyncio.create_task(
+        run_evaluation_job(
+            run_id,
+            payload,
+            facet_ids,
+        )
     )
-    return EvaluationResponse(
-        conversation_id=payload.conversation_id,
+    return EvaluationJobResponse(
         run_id=run_id,
-        score_scale=SCORE_SCALE,
-        facet_count=len(selected),
-        turn_count=len(payload.turns),
-        model=client.model_name,
-        saved_path=str(saved_path),
-        results=results,
+        status="running",
+        message="Evaluation started.",
+    )
+
+
+@app.get("/api/evaluate/{run_id}", response_model=EvaluationJobResponse)
+def evaluation_status(run_id: str) -> EvaluationJobResponse:
+    status = read_run_status(run_id)
+    if not status:
+        raise HTTPException(status_code=404, detail="Run not found.")
+    result = status.get("result")
+    return EvaluationJobResponse(
+        run_id=run_id,
+        status=status.get("status", "unknown"),
+        message=status.get("message", ""),
+        result=EvaluationResponse.model_validate(result) if result else None,
     )

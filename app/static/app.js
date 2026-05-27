@@ -6,6 +6,7 @@ const summary = document.querySelector("#summary");
 const facetCount = document.querySelector("#facetCount");
 const facetLimit = document.querySelector("#facetLimit");
 const conversationId = document.querySelector("#conversationId");
+const activeRunKey = "oceanAcrossActiveRunId";
 
 const example = [
   {
@@ -50,6 +51,42 @@ function renderScores(data) {
   setStatus(`Scored ${data.turn_count} turns across ${data.facet_count} facets.`);
 }
 
+async function pollRun(runId) {
+  localStorage.setItem(activeRunKey, runId);
+  button.disabled = true;
+  summary.textContent = "Running";
+  setStatus(`Evaluation is running. Run id: ${runId}`);
+
+  try {
+    while (true) {
+      const response = await fetch(`/api/evaluate/${encodeURIComponent(runId)}`);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || "Could not read run status");
+      }
+
+      if (data.status === "completed" && data.result) {
+        renderScores(data.result);
+        localStorage.removeItem(activeRunKey);
+        return;
+      }
+
+      if (data.status === "failed") {
+        throw new Error(data.message || "Evaluation failed");
+      }
+
+      setStatus(data.message || `Evaluation is running. Run id: ${runId}`);
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+  } catch (error) {
+    summary.textContent = "Needs attention";
+    setStatus(error.message, true);
+    localStorage.removeItem(activeRunKey);
+  } finally {
+    button.disabled = false;
+  }
+}
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -82,7 +119,7 @@ button.addEventListener("click", async () => {
     if (!response.ok) {
       throw new Error(data.detail || "Evaluation failed");
     }
-    renderScores(data);
+    await pollRun(data.run_id);
   } catch (error) {
     summary.textContent = "Needs attention";
     setStatus(error.message, true);
@@ -92,3 +129,8 @@ button.addEventListener("click", async () => {
 });
 
 loadFacets().catch(() => setStatus("Could not load facets.", true));
+
+const activeRunId = localStorage.getItem(activeRunKey);
+if (activeRunId) {
+  pollRun(activeRunId);
+}
