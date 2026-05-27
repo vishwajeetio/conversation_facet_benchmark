@@ -1,6 +1,7 @@
 services:
   app:
     build: .
+    restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
@@ -18,6 +19,7 @@ services:
 
   ollama:
     image: ollama/ollama:latest
+    restart: unless-stopped
     ports:
       - "11434:11434"
     volumes:
