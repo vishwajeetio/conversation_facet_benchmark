@@ -10,7 +10,7 @@ services:
       FACET_BATCH_SIZE: 8
       FACET_PROCESS_BATCH_SIZE: 30
       FACET_MAX_CATEGORIES: 12
-      OLLAMA_TIMEOUT_SECONDS: 300
+      OLLAMA_TIMEOUT_SECONDS: 600
       OLLAMA_NUM_CTX: 4096
     volumes:
       - ./data:/app/data
@@ -22,6 +22,10 @@ services:
     restart: unless-stopped
     ports:
       - "11434:11434"
+    environment:
+      OLLAMA_NUM_PARALLEL: 3
+      OLLAMA_MAX_LOADED_MODELS: 1
+      OLLAMA_KEEP_ALIVE: 1h
     volumes:
       - ollama:/root/.ollama
 
