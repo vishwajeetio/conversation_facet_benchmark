@@ -229,13 +229,20 @@ That is operationally heavy, but it does not require an architectural rewrite. T
 | --- | --- | --- |
 | `OLLAMA_MODEL` | `qwen2.5:14b-instruct` | Model used for categorization and scoring. |
 | `FACET_BATCH_SIZE` | `8` | Number of facets scored per model call. |
-| `EVALUATION_MAX_CONCURRENCY` | `8` | Maximum scoring batches the app runs at the same time. |
-| `FACET_PROCESS_BATCH_SIZE` | `30` | Number of facets categorized per model call. |
+| `EVALUATION_MAX_CONCURRENCY` | `4` | Maximum scoring batches the app runs at the same time. |
+| `FACET_PROCESS_BATCH_SIZE` | `32` | Number of facets categorized per model call. |
 | `FACET_MAX_CATEGORIES` | `12` | Maximum category labels generated during facet processing. |
-| `OLLAMA_TIMEOUT_SECONDS` | `300` | Timeout for one Ollama request. |
+| `OLLAMA_TIMEOUT_SECONDS` | `1200` | Timeout for one Ollama request. |
 | `OLLAMA_NUM_CTX` | `4096` | Context window requested from Ollama. |
+| `OLLAMA_NUM_PARALLEL` | `4` | Number of parallel requests Ollama should process. |
 
 `EVALUATION_MAX_CONCURRENCY` should usually be close to Ollama's `OLLAMA_NUM_PARALLEL`. If it is much higher, requests will queue or compete for memory instead of getting faster.
+
+When changing Ollama server variables such as `OLLAMA_NUM_PARALLEL`, recreate the Ollama container so the server starts with the new setting:
+
+```bash
+docker compose up -d --force-recreate ollama app
+```
 
 ### Recommended Settings
 
@@ -243,17 +250,24 @@ For quick local demos:
 
 ```yaml
 FACET_BATCH_SIZE: 8
-EVALUATION_MAX_CONCURRENCY: 8
+EVALUATION_MAX_CONCURRENCY: 2
 FACET_MAX_CATEGORIES: 8
 ```
 
-For better throughput on stronger hardware:
+For a 14B model on a 20GB GPU, start around:
 
 ```yaml
 FACET_BATCH_SIZE: 16
 EVALUATION_MAX_CONCURRENCY: 4
-FACET_PROCESS_BATCH_SIZE: 50
-OLLAMA_NUM_CTX: 8192
+OLLAMA_NUM_PARALLEL: 4
+OLLAMA_NUM_CTX: 4096
+```
+
+If memory is still available and latency improves, try:
+
+```yaml
+EVALUATION_MAX_CONCURRENCY: 6
+OLLAMA_NUM_PARALLEL: 6
 ```
 
 For safer JSON reliability on weaker hardware:
@@ -274,6 +288,7 @@ Important limiting factors:
 - Hardware: CPU-only inference is much slower than GPU-backed Ollama.
 - Facet batch size: larger batches reduce request count but increase prompt and output length.
 - App concurrency: higher `EVALUATION_MAX_CONCURRENCY` can improve throughput if Ollama and hardware can handle it.
+- Ollama server concurrency: `OLLAMA_NUM_PARALLEL` must be set on the Ollama service, not just the app.
 - Conversation length: longer turns increase prompt tokens.
 - Rationales: every rationale adds output tokens.
 - Number of turns: each turn is scored independently.
@@ -285,6 +300,7 @@ Practical improvements:
 
 - Increase `FACET_BATCH_SIZE` until JSON reliability starts dropping.
 - Increase `EVALUATION_MAX_CONCURRENCY` up to the number of parallel Ollama requests your machine can handle.
+- Match `OLLAMA_NUM_PARALLEL` to `EVALUATION_MAX_CONCURRENCY`, then recreate the Ollama container.
 - Use GPU acceleration for Ollama.
 - Use a smaller <=16B model if quality is acceptable.
 - Reduce rationale length or make rationale optional for bulk scoring.

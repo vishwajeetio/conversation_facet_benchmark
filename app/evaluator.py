@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import os
 import socket
 import urllib.error
@@ -13,6 +14,7 @@ from app.models import ConversationTurn, Facet, FacetScore
 
 
 SCORE_SCALE = [-2, -1, 0, 1, 2]
+LOGGER = logging.getLogger(__name__)
 
 
 class LLMClient(Protocol):
@@ -220,6 +222,12 @@ async def evaluate_conversation(
         batch: list[Facet],
     ) -> tuple[int, int, list[FacetScore]]:
         async with semaphore:
+            LOGGER.info(
+                "Scoring turn=%s batch=%s facets=%s",
+                turn_index,
+                batch_index,
+                len(batch),
+            )
             scores = await client.score_batch(conversation_id, turn_index, turn, batch)
             return turn_index, batch_index, scores
 
