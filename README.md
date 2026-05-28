@@ -4,6 +4,8 @@ Lightweight Dockerized benchmark for scoring every conversation turn across hund
 
 The system has simple FastAPI backend, plain HTML/CSS/JS UI, Ollama model service, CSV-backed facet registry, and JSON result files saved under `data/results`.
 
+![Conversation Facet Evaluator UI](./dashboard.png)
+
 ## Installation And Setup
 
 ### 1. Start The Services
