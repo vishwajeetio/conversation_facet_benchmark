@@ -7,6 +7,7 @@ import os
 import socket
 import urllib.error
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -209,17 +210,35 @@ async def evaluate_conversation(
     client = client or make_client()
     batch_size = batch_size or int(os.getenv("FACET_BATCH_SIZE", "8"))
     max_concurrency = max_concurrency or int(os.getenv("EVALUATION_MAX_CONCURRENCY", "2"))
-    semaphore = asyncio.Semaphore(max(1, max_concurrency))
+    max_concurrency = max(1, max_concurrency)
+    semaphore = asyncio.Semaphore(max_concurrency)
     jobs: list[tuple[int, int, ConversationTurn, list[Facet]]] = []
     for turn_index, turn in enumerate(turns):
         for batch_index, batch in enumerate(chunked(facets, batch_size)):
             jobs.append((turn_index, batch_index, turn, batch))
+
+    LOGGER.info(
+        "Starting evaluation conversation_id=%s turns=%s facets=%s jobs=%s batch_size=%s concurrency=%s",
+        conversation_id,
+        len(turns),
+        len(facets),
+        len(jobs),
+        batch_size,
+        max_concurrency,
+    )
+    if len(jobs) < max_concurrency:
+        LOGGER.warning(
+            "Evaluation has fewer jobs (%s) than concurrency (%s); increase facet limit, turns, or lower batch size to keep Ollama busy.",
+            len(jobs),
+            max_concurrency,
+        )
 
     async def score_job(
         turn_index: int,
         batch_index: int,
         turn: ConversationTurn,
         batch: list[Facet],
+        executor: ThreadPoolExecutor,
     ) -> tuple[int, int, list[FacetScore]]:
         async with semaphore:
             LOGGER.info(
@@ -228,14 +247,29 @@ async def evaluate_conversation(
                 batch_index,
                 len(batch),
             )
-            scores = await client.score_batch(conversation_id, turn_index, turn, batch)
+            if isinstance(client, OllamaClient):
+                loop = asyncio.get_running_loop()
+                scores = await loop.run_in_executor(
+                    executor,
+                    client._score_batch_sync,
+                    conversation_id,
+                    turn_index,
+                    turn,
+                    batch,
+                )
+            else:
+                scores = await client.score_batch(conversation_id, turn_index, turn, batch)
             return turn_index, batch_index, scores
 
-    completed = await asyncio.gather(
-        *(
-            score_job(turn_index, batch_index, turn, batch)
-            for turn_index, batch_index, turn, batch in jobs
+    with ThreadPoolExecutor(
+        max_workers=max_concurrency,
+        thread_name_prefix="evaluation_batch",
+    ) as executor:
+        completed = await asyncio.gather(
+            *(
+                score_job(turn_index, batch_index, turn, batch, executor)
+                for turn_index, batch_index, turn, batch in jobs
+            )
         )
-    )
     completed.sort(key=lambda item: (item[0], item[1]))
     return [score for _, _, scores in completed for score in scores]

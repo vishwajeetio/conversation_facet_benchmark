@@ -244,6 +244,8 @@ When changing Ollama server variables such as `OLLAMA_NUM_PARALLEL`, recreate th
 docker compose up -d --force-recreate ollama app
 ```
 
+The app uses a dedicated scoring thread pool sized by `EVALUATION_MAX_CONCURRENCY`, so this value directly controls how many batch requests it can push toward Ollama at once.
+
 ### Recommended Settings
 
 For quick local demos:
@@ -289,6 +291,7 @@ Important limiting factors:
 - Facet batch size: larger batches reduce request count but increase prompt and output length.
 - App concurrency: higher `EVALUATION_MAX_CONCURRENCY` can improve throughput if Ollama and hardware can handle it.
 - Ollama server concurrency: `OLLAMA_NUM_PARALLEL` must be set on the Ollama service, not just the app.
+- Job count: the app cannot fill a concurrency of 6 if a run only has 2-3 facet batches. Increase facet limit or reduce `FACET_BATCH_SIZE` for small runs.
 - Conversation length: longer turns increase prompt tokens.
 - Rationales: every rationale adds output tokens.
 - Number of turns: each turn is scored independently.
