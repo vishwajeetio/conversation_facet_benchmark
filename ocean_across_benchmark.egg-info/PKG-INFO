@@ -1,9 +1,0 @@
-Metadata-Version: 2.4
-Name: ocean-across-benchmark
-Version: 0.1.0
-Summary: Lightweight Ollama-backed conversation facet evaluation benchmark.
-Requires-Python: >=3.11
-Requires-Dist: fastapi<1,>=0.115
-Requires-Dist: uvicorn[standard]<1,>=0.30
-Requires-Dist: pydantic<3,>=2.8
-Requires-Dist: aiohttp<4,>=3.10
