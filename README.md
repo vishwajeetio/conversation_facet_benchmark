@@ -230,10 +230,13 @@ That is operationally heavy, but it does not require an architectural rewrite. T
 | `OLLAMA_MODEL` | `qwen2.5:14b-instruct` | Model used for categorization and scoring. |
 | `FACET_BATCH_SIZE` | `8` | Number of facets scored per model call. |
 | `EVALUATION_MAX_CONCURRENCY` | `4` | Maximum scoring batches the app runs at the same time. |
+| `EVALUATION_RETRY_MISSING` | `true` | Retry facets omitted by the model in larger batches. |
+| `EVALUATION_RETRY_BATCH_SIZE` | `1` | Facets per retry call when the model omits items. |
 | `FACET_PROCESS_BATCH_SIZE` | `32` | Number of facets categorized per model call. |
 | `FACET_MAX_CATEGORIES` | `12` | Maximum category labels generated during facet processing. |
 | `OLLAMA_TIMEOUT_SECONDS` | `1200` | Timeout for one Ollama request. |
 | `OLLAMA_NUM_CTX` | `4096` | Context window requested from Ollama. |
+| `OLLAMA_NUM_PREDICT_PER_FACET` | `128` | Output-token budget multiplier per scored facet. |
 | `OLLAMA_NUM_PARALLEL` | `4` | Number of parallel requests Ollama should process. |
 
 `EVALUATION_MAX_CONCURRENCY` should usually be close to Ollama's `OLLAMA_NUM_PARALLEL`. If it is much higher, requests will queue or compete for memory instead of getting faster.
@@ -259,8 +262,10 @@ FACET_MAX_CATEGORIES: 8
 For a 14B model on a 20GB GPU, start around:
 
 ```yaml
-FACET_BATCH_SIZE: 16
+FACET_BATCH_SIZE: 8
 EVALUATION_MAX_CONCURRENCY: 4
+EVALUATION_RETRY_MISSING: true
+EVALUATION_RETRY_BATCH_SIZE: 1
 OLLAMA_NUM_PARALLEL: 4
 OLLAMA_NUM_CTX: 4096
 ```
@@ -268,6 +273,7 @@ OLLAMA_NUM_CTX: 4096
 If memory is still available and latency improves, try:
 
 ```yaml
+FACET_BATCH_SIZE: 12
 EVALUATION_MAX_CONCURRENCY: 6
 OLLAMA_NUM_PARALLEL: 6
 ```
@@ -289,6 +295,7 @@ Important limiting factors:
 - Model size: larger models are slower.
 - Hardware: CPU-only inference is much slower than GPU-backed Ollama.
 - Facet batch size: larger batches reduce request count but increase prompt and output length.
+- Missing facet retries: larger batches can make the model omit facets; the app retries omitted facets in small reliable batches.
 - App concurrency: higher `EVALUATION_MAX_CONCURRENCY` can improve throughput if Ollama and hardware can handle it.
 - Ollama server concurrency: `OLLAMA_NUM_PARALLEL` must be set on the Ollama service, not just the app.
 - Job count: the app cannot fill a concurrency of 6 if a run only has 2-3 facet batches. Increase facet limit or reduce `FACET_BATCH_SIZE` for small runs.
@@ -301,9 +308,10 @@ Important limiting factors:
 
 Practical improvements:
 
-- Increase `FACET_BATCH_SIZE` until JSON reliability starts dropping.
+- Increase `FACET_BATCH_SIZE` until omission retries become frequent, then back off slightly.
 - Increase `EVALUATION_MAX_CONCURRENCY` up to the number of parallel Ollama requests your machine can handle.
 - Match `OLLAMA_NUM_PARALLEL` to `EVALUATION_MAX_CONCURRENCY`, then recreate the Ollama container.
+- Keep `EVALUATION_RETRY_MISSING=true` to avoid silent `0 / 25%` fallback scores when larger batches omit facets.
 - Use GPU acceleration for Ollama.
 - Use a smaller <=16B model if quality is acceptable.
 - Reduce rationale length or make rationale optional for bulk scoring.

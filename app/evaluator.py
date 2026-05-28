@@ -91,7 +91,19 @@ class OllamaClient:
         turn: ConversationTurn,
         facets: list[Facet],
     ) -> list[FacetScore]:
+        items = await self._score_batch_items(session, turn_index, turn, facets)
+        items = await self._retry_missing_items(session, turn_index, turn, facets, items)
+        return normalize_scores(conversation_id, turn_index, turn, facets, items)
+
+    async def _score_batch_items(
+        self,
+        session: aiohttp.ClientSession,
+        turn_index: int,
+        turn: ConversationTurn,
+        facets: list[Facet],
+    ) -> list[dict]:
         prompt = build_prompt(turn_index, turn, facets)
+        predict_per_facet = int(os.getenv("OLLAMA_NUM_PREDICT_PER_FACET", "128"))
         payload = {
             "model": self.model_name,
             "prompt": prompt,
@@ -101,7 +113,7 @@ class OllamaClient:
             "options": {
                 "temperature": 0.0,
                 "num_ctx": self.num_ctx,
-                "num_predict": max(256, len(facets) * 96),
+                "num_predict": max(256, len(facets) * predict_per_facet),
             },
         }
         url = f"{self.base_url.rstrip('/')}/api/generate"
@@ -127,8 +139,52 @@ class OllamaClient:
                 "Ollama returned malformed JSON for a facet batch. "
                 "Retry or reduce FACET_BATCH_SIZE."
             ) from exc
-        items = parsed.get("scores", []) if isinstance(parsed, dict) else []
-        return normalize_scores(conversation_id, turn_index, turn, facets, items)
+        return parsed.get("scores", []) if isinstance(parsed, dict) else []
+
+    async def _retry_missing_items(
+        self,
+        session: aiohttp.ClientSession,
+        turn_index: int,
+        turn: ConversationTurn,
+        facets: list[Facet],
+        items: list[dict],
+    ) -> list[dict]:
+        if os.getenv("EVALUATION_RETRY_MISSING", "true").lower() != "true":
+            return items
+
+        returned_ids = {
+            str(item.get("facet_id"))
+            for item in items
+            if isinstance(item, dict) and item.get("facet_id")
+        }
+        missing = [facet for facet in facets if facet.facet_id not in returned_ids]
+        if not missing:
+            return items
+
+        retry_batch_size = max(1, int(os.getenv("EVALUATION_RETRY_BATCH_SIZE", "1")))
+        LOGGER.warning(
+            "Retrying %s missing facets from turn=%s in retry_batch_size=%s",
+            len(missing),
+            turn_index,
+            retry_batch_size,
+        )
+        retry_batches = chunked(missing, retry_batch_size)
+        retry_items_nested = await asyncio.gather(
+            *(
+                self._score_batch_items(session, turn_index, turn, retry_batch)
+                for retry_batch in retry_batches
+            )
+        )
+        merged = {
+            str(item.get("facet_id")): item
+            for item in items
+            if isinstance(item, dict) and item.get("facet_id")
+        }
+        for retry_items in retry_items_nested:
+            for item in retry_items:
+                if isinstance(item, dict) and item.get("facet_id"):
+                    merged[str(item.get("facet_id"))] = item
+        return list(merged.values())
 
 
 def build_prompt(turn_index: int, turn: ConversationTurn, facets: list[Facet]) -> str:
@@ -141,7 +197,10 @@ Return only valid JSON with this exact shape:
 {{"scores":[{{"facet_id":"F0001","score":0,"confidence":0.72,"rationale":"short evidence"}}]}}
 
 Rules:
+- There are exactly {len(facets)} facets below.
+- Return exactly {len(facets)} score objects.
 - Score every listed facet exactly once.
+- Do not omit any listed facet_id.
 - Use only these ordered integer scores: -2, -1, 0, 1, 2.
 - -2 means strong evidence against; -1 weak against; 0 no clear evidence; 1 weak for; 2 strong for.
 - Confidence is 0 to 1.
