@@ -244,7 +244,7 @@ When changing Ollama server variables such as `OLLAMA_NUM_PARALLEL`, recreate th
 docker compose up -d --force-recreate ollama app
 ```
 
-The app uses a dedicated scoring thread pool sized by `EVALUATION_MAX_CONCURRENCY`, so this value directly controls how many batch requests it can push toward Ollama at once.
+The app uses real async HTTP requests through `aiohttp`, with the connection pool bounded by `EVALUATION_MAX_CONCURRENCY`, so this value directly controls how many batch requests it can keep in flight toward Ollama.
 
 ### Recommended Settings
 

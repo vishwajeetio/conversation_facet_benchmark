@@ -3,10 +3,10 @@ from __future__ import annotations
 import asyncio
 import csv
 import json
-import urllib.error
-import urllib.request
 from collections import Counter
 from dataclasses import dataclass
+
+import aiohttp
 
 from app.facets import FACETS_CSV, load_facets
 from app.evaluator import chunked, parse_json_object
@@ -18,30 +18,41 @@ class FacetCategoryClient:
     base_url: str
     model_name: str
     timeout_seconds: int = 300
+    session: aiohttp.ClientSession | None = None
 
     async def suggest_categories(
         self,
         facets: list[Facet],
         max_categories: int,
     ) -> list[str]:
-        return await asyncio.to_thread(
-            self._suggest_categories_sync,
-            facets,
-            max_categories,
-        )
+        if self.session:
+            return await self._suggest_categories(facets, max_categories)
+
+        timeout = aiohttp.ClientTimeout(total=self.timeout_seconds)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            self.session = session
+            try:
+                return await self._suggest_categories(facets, max_categories)
+            finally:
+                self.session = None
 
     async def categorize(
         self,
         facets: list[Facet],
         allowed_categories: list[str],
     ) -> list[dict[str, str]]:
-        return await asyncio.to_thread(
-            self._categorize_sync,
-            facets,
-            allowed_categories,
-        )
+        if self.session:
+            return await self._categorize(facets, allowed_categories)
 
-    def _suggest_categories_sync(
+        timeout = aiohttp.ClientTimeout(total=self.timeout_seconds)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            self.session = session
+            try:
+                return await self._categorize(facets, allowed_categories)
+            finally:
+                self.session = None
+
+    async def _suggest_categories(
         self,
         facets: list[Facet],
         max_categories: int,
@@ -60,11 +71,11 @@ Rules:
 Facets:
 {facet_lines}
 """
-        parsed = self._generate_json(prompt, max(256, max_categories * 24))
+        parsed = await self._generate_json(prompt, max(256, max_categories * 24))
         categories = parsed.get("categories", []) if isinstance(parsed, dict) else []
         return normalize_categories(categories, max_categories)
 
-    def _categorize_sync(
+    async def _categorize(
         self,
         facets: list[Facet],
         allowed_categories: list[str],
@@ -87,11 +98,11 @@ Rules:
 Facets:
 {facet_lines}
 """
-        parsed = self._generate_json(prompt, max(256, len(facets) * 32))
+        parsed = await self._generate_json(prompt, max(256, len(facets) * 32))
         items = parsed.get("facets", []) if isinstance(parsed, dict) else []
         return [item for item in items if isinstance(item, dict)]
 
-    def _generate_json(self, prompt: str, num_predict: int) -> dict:
+    async def _generate_json(self, prompt: str, num_predict: int) -> dict:
         payload = {
             "model": self.model_name,
             "prompt": prompt,
@@ -104,16 +115,19 @@ Facets:
                 "num_predict": num_predict,
             },
         }
-        request = urllib.request.Request(
-            f"{self.base_url.rstrip('/')}/api/generate",
-            data=json.dumps(payload).encode("utf-8"),
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
+        url = f"{self.base_url.rstrip('/')}/api/generate"
+        session = self.session
+        if not session:
+            raise RuntimeError("Ollama facet processing session is not initialized.")
         try:
-            with urllib.request.urlopen(request, timeout=self.timeout_seconds) as response:
-                data = json.loads(response.read().decode("utf-8"))
-        except urllib.error.URLError as exc:
+            async with session.post(url, json=payload) as response:
+                if response.status >= 400:
+                    detail = (await response.text())[:500]
+                    raise RuntimeError(f"Ollama returned HTTP {response.status}: {detail}")
+                data = await response.json()
+        except asyncio.TimeoutError as exc:
+            raise RuntimeError("Ollama facet processing timed out.") from exc
+        except aiohttp.ClientError as exc:
             raise RuntimeError(f"Ollama facet processing failed: {exc}") from exc
 
         return parse_json_object(data.get("response", "{}"))
@@ -150,17 +164,23 @@ async def process_facets_with_ollama(
     max_categories = max(2, max_categories)
     facets = load_facets()
     suggestions: list[str] = []
-    for batch in chunked(facets, batch_size):
-        suggestions.extend(await client.suggest_categories(batch, max_categories))
-    allowed_categories = normalize_categories(suggestions, max_categories)
+    timeout = aiohttp.ClientTimeout(total=client.timeout_seconds)
+    async with aiohttp.ClientSession(timeout=timeout) as session:
+        client.session = session
+        try:
+            for batch in chunked(facets, batch_size):
+                suggestions.extend(await client.suggest_categories(batch, max_categories))
+            allowed_categories = normalize_categories(suggestions, max_categories)
 
-    categories_by_id: dict[str, str] = {}
-    for batch in chunked(facets, batch_size):
-        for item in await client.categorize(batch, allowed_categories):
-            category = normalize_category(item.get("category", "unclear"))
-            if category not in allowed_categories:
-                category = "unclear"
-            categories_by_id[str(item.get("facet_id"))] = category
+            categories_by_id: dict[str, str] = {}
+            for batch in chunked(facets, batch_size):
+                for item in await client.categorize(batch, allowed_categories):
+                    category = normalize_category(item.get("category", "unclear"))
+                    if category not in allowed_categories:
+                        category = "unclear"
+                    categories_by_id[str(item.get("facet_id"))] = category
+        finally:
+            client.session = None
 
     records = []
     for facet in facets:

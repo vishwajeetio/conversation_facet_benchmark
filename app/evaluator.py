@@ -4,12 +4,10 @@ import asyncio
 import json
 import logging
 import os
-import socket
-import urllib.error
-import urllib.request
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Protocol
+
+import aiohttp
 
 from app.models import ConversationTurn, Facet, FacetScore
 
@@ -57,6 +55,7 @@ class OllamaClient:
     model_name: str
     timeout_seconds: int = 300
     num_ctx: int = 4096
+    session: aiohttp.ClientSession | None = None
 
     async def score_batch(
         self,
@@ -65,12 +64,28 @@ class OllamaClient:
         turn: ConversationTurn,
         facets: list[Facet],
     ) -> list[FacetScore]:
-        return await asyncio.to_thread(
-            self._score_batch_sync, conversation_id, turn_index, turn, facets
-        )
+        if self.session:
+            return await self._score_batch_async(
+                self.session,
+                conversation_id,
+                turn_index,
+                turn,
+                facets,
+            )
 
-    def _score_batch_sync(
+        timeout = aiohttp.ClientTimeout(total=self.timeout_seconds)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            return await self._score_batch_async(
+                session,
+                conversation_id,
+                turn_index,
+                turn,
+                facets,
+            )
+
+    async def _score_batch_async(
         self,
+        session: aiohttp.ClientSession,
         conversation_id: str,
         turn_index: int,
         turn: ConversationTurn,
@@ -89,29 +104,19 @@ class OllamaClient:
                 "num_predict": max(256, len(facets) * 96),
             },
         }
-        request = urllib.request.Request(
-            f"{self.base_url.rstrip('/')}/api/generate",
-            data=json.dumps(payload).encode("utf-8"),
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
+        url = f"{self.base_url.rstrip('/')}/api/generate"
         try:
-            with urllib.request.urlopen(request, timeout=self.timeout_seconds) as response:
-                data = json.loads(response.read().decode("utf-8"))
-        except TimeoutError as exc:
+            async with session.post(url, json=payload) as response:
+                if response.status >= 400:
+                    detail = (await response.text())[:500]
+                    raise RuntimeError(f"Ollama returned HTTP {response.status}: {detail}")
+                data = await response.json()
+        except asyncio.TimeoutError as exc:
             raise RuntimeError(
                 "Ollama timed out while scoring a facet batch. "
                 "Try a smaller FACET_BATCH_SIZE or a smaller model."
             ) from exc
-        except socket.timeout as exc:
-            raise RuntimeError(
-                "Ollama timed out while scoring a facet batch. "
-                "Try a smaller FACET_BATCH_SIZE or a smaller model."
-            ) from exc
-        except urllib.error.HTTPError as exc:
-            detail = exc.read().decode("utf-8", errors="replace")[:500]
-            raise RuntimeError(f"Ollama returned HTTP {exc.code}: {detail}") from exc
-        except urllib.error.URLError as exc:
+        except aiohttp.ClientError as exc:
             raise RuntimeError(f"Ollama request failed: {exc}") from exc
 
         raw_response = data.get("response", "{}")
@@ -238,7 +243,6 @@ async def evaluate_conversation(
         batch_index: int,
         turn: ConversationTurn,
         batch: list[Facet],
-        executor: ThreadPoolExecutor,
     ) -> tuple[int, int, list[FacetScore]]:
         async with semaphore:
             LOGGER.info(
@@ -247,27 +251,27 @@ async def evaluate_conversation(
                 batch_index,
                 len(batch),
             )
-            if isinstance(client, OllamaClient):
-                loop = asyncio.get_running_loop()
-                scores = await loop.run_in_executor(
-                    executor,
-                    client._score_batch_sync,
-                    conversation_id,
-                    turn_index,
-                    turn,
-                    batch,
-                )
-            else:
-                scores = await client.score_batch(conversation_id, turn_index, turn, batch)
+            scores = await client.score_batch(conversation_id, turn_index, turn, batch)
             return turn_index, batch_index, scores
 
-    with ThreadPoolExecutor(
-        max_workers=max_concurrency,
-        thread_name_prefix="evaluation_batch",
-    ) as executor:
+    if isinstance(client, OllamaClient):
+        timeout = aiohttp.ClientTimeout(total=client.timeout_seconds)
+        connector = aiohttp.TCPConnector(limit=max_concurrency, limit_per_host=max_concurrency)
+        async with aiohttp.ClientSession(timeout=timeout, connector=connector) as session:
+            client.session = session
+            try:
+                completed = await asyncio.gather(
+                    *(
+                        score_job(turn_index, batch_index, turn, batch)
+                        for turn_index, batch_index, turn, batch in jobs
+                    )
+                )
+            finally:
+                client.session = None
+    else:
         completed = await asyncio.gather(
             *(
-                score_job(turn_index, batch_index, turn, batch, executor)
+                score_job(turn_index, batch_index, turn, batch)
                 for turn_index, batch_index, turn, batch in jobs
             )
         )
