@@ -30,10 +30,10 @@ http://localhost:8000
 In another terminal:
 
 ```bash
-docker compose exec ollama ollama pull qwen2.5:7b-instruct
+docker compose exec ollama ollama pull qwen2.5:14b-instruct
 ```
 
-The default model is `qwen2.5:7b-instruct`, which keeps the assignment within the open-weights and <=16B constraint. You can switch models with `OLLAMA_MODEL` in `docker-compose.yml`.
+The default model is `qwen2.5:14b-instruct`, which keeps the assignment within the open-weights and <=16B constraint. You can switch models with `OLLAMA_MODEL` in `docker-compose.yml`.
 
 ### 3. Process The Facets
 
@@ -227,9 +227,9 @@ That is operationally heavy, but it does not require an architectural rewrite. T
 
 | Variable | Default | Use |
 | --- | --- | --- |
-| `OLLAMA_MODEL` | `qwen2.5:7b-instruct` | Model used for categorization and scoring. |
+| `OLLAMA_MODEL` | `qwen2.5:14b-instruct` | Model used for categorization and scoring. |
 | `FACET_BATCH_SIZE` | `8` | Number of facets scored per model call. |
-| `EVALUATION_MAX_CONCURRENCY` | `2` | Maximum scoring batches the app runs at the same time. |
+| `EVALUATION_MAX_CONCURRENCY` | `8` | Maximum scoring batches the app runs at the same time. |
 | `FACET_PROCESS_BATCH_SIZE` | `30` | Number of facets categorized per model call. |
 | `FACET_MAX_CATEGORIES` | `12` | Maximum category labels generated during facet processing. |
 | `OLLAMA_TIMEOUT_SECONDS` | `300` | Timeout for one Ollama request. |
@@ -243,7 +243,7 @@ For quick local demos:
 
 ```yaml
 FACET_BATCH_SIZE: 8
-EVALUATION_MAX_CONCURRENCY: 2
+EVALUATION_MAX_CONCURRENCY: 8
 FACET_MAX_CATEGORIES: 8
 ```
 
