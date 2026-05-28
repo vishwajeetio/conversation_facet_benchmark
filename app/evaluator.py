@@ -202,13 +202,32 @@ async def evaluate_conversation(
     facets: list[Facet],
     client: LLMClient | None = None,
     batch_size: int | None = None,
+    max_concurrency: int | None = None,
 ) -> list[FacetScore]:
     client = client or make_client()
     batch_size = batch_size or int(os.getenv("FACET_BATCH_SIZE", "8"))
-    all_scores: list[FacetScore] = []
+    max_concurrency = max_concurrency or int(os.getenv("EVALUATION_MAX_CONCURRENCY", "2"))
+    semaphore = asyncio.Semaphore(max(1, max_concurrency))
+    jobs: list[tuple[int, int, ConversationTurn, list[Facet]]] = []
     for turn_index, turn in enumerate(turns):
-        for batch in chunked(facets, batch_size):
-            all_scores.extend(
-                await client.score_batch(conversation_id, turn_index, turn, batch)
-            )
-    return all_scores
+        for batch_index, batch in enumerate(chunked(facets, batch_size)):
+            jobs.append((turn_index, batch_index, turn, batch))
+
+    async def score_job(
+        turn_index: int,
+        batch_index: int,
+        turn: ConversationTurn,
+        batch: list[Facet],
+    ) -> tuple[int, int, list[FacetScore]]:
+        async with semaphore:
+            scores = await client.score_batch(conversation_id, turn_index, turn, batch)
+            return turn_index, batch_index, scores
+
+    completed = await asyncio.gather(
+        *(
+            score_job(turn_index, batch_index, turn, batch)
+            for turn_index, batch_index, turn, batch in jobs
+        )
+    )
+    completed.sort(key=lambda item: (item[0], item[1]))
+    return [score for _, _, scores in completed for score in scores]
